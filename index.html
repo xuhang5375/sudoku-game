@@ -125,10 +125,6 @@
   #board td.filled.correct {
     color: #1b5e20;
   }
-  /* 同数字 */
-  #board td.same-num {
-    background: rgba(76,175,80,0.22) !important;
-  }
   /* 冲突格子 */
   #board td.error-cell {
     color: #c62828 !important;
@@ -552,10 +548,6 @@ function render() {
           if (r >= br && r < br + 3 && c >= bc && c < bc + 3) {
             td.classList.add('hl-block');
           }
-        }
-        // 其他同数字格子（在非repeatMode时额外显示）
-        if (!repeatMode && board[r][c] === board[selected.r][selected.c]) {
-          td.classList.add('same-num');
         }
       }
 
