@@ -62,43 +62,47 @@
 
   /* 选中格子 */
   #board td.selected {
-    background: rgba(76,175,80,0.55) !important;
+    background: rgba(76,175,80,0.7) !important;
     box-shadow: inset 0 0 0 2.5px #1b5e20;
     z-index: 2;
   }
   /* 同行 */
   #board td.hl-row {
-    background: rgba(76,175,80,0.18) !important;
+    background: rgba(76,175,80,0.32) !important;
   }
   /* 同列 */
   #board td.hl-col {
-    background: rgba(76,175,80,0.18) !important;
+    background: rgba(76,175,80,0.32) !important;
   }
   /* 同9宫格（不是同行同列） */
   #board td.hl-block {
-    background: rgba(76,175,80,0.13) !important;
+    background: rgba(76,175,80,0.22) !important;
   }
   /* 同行且同列（十字交叉处）叠加 */
   #board td.hl-row.hl-col {
-    background: rgba(76,175,80,0.28) !important;
+    background: rgba(76,175,80,0.48) !important;
   }
   /* 同行且同9宫格 */
   #board td.hl-row.hl-block {
-    background: rgba(76,175,80,0.23) !important;
+    background: rgba(76,175,80,0.42) !important;
   }
   /* 同列且同9宫格 */
   #board td.hl-col.hl-block {
-    background: rgba(76,175,80,0.23) !important;
+    background: rgba(76,175,80,0.42) !important;
   }
   /* 三者重叠 */
   #board td.hl-row.hl-col.hl-block {
-    background: rgba(76,175,80,0.33) !important;
+    background: rgba(76,175,80,0.56) !important;
   }
-  /* 选中时不再加hover样式 */
+  /* 选中时覆盖hover */
   #board td.selected.hl-row,
   #board td.selected.hl-col,
-  #board td.selected.hl-block {
-    background: rgba(76,175,80,0.55) !important;
+  #board td.selected.hl-block,
+  #board td.selected.hl-row.hl-col,
+  #board td.selected.hl-row.hl-block,
+  #board td.selected.hl-col.hl-block,
+  #board td.selected.hl-row.hl-col.hl-block {
+    background: rgba(76,175,80,0.7) !important;
   }
 
   /* 给定数字（原始题目） */
