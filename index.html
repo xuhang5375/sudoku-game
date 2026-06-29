@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数独小游戏</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    color: #e0e0e0;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 4px;
+  }
+  .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 20px; }
+
+  .info-bar {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+  .info-bar span { color: #aaa; }
+  .info-bar strong { color: #667eea; }
+
+  .board-wrap {
+    position: relative;
+  }
+
+  #board {
+    border-collapse: collapse;
+    border: 3px solid #667eea;
+    background: #16213e;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.15);
+  }
+  #board td {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #2a2a4a;
+    font-size: 1.4rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+  }
+  /* 3x3 block borders */
+  #board td:nth-child(3), #board td:nth-child(6) { border-right: 2px solid #667eea; }
+  tr:nth-child(3) td, tr:nth-child(6) td { border-bottom: 2px solid #667eea; }
+
+  #board td.fixed {
+    color: #c0c0c0;
+    background: #0f1629;
+    cursor: default;
+    font-weight: 700;
+  }
+  #board td.given {
+    color: #ffffff;
+    background: #1a2744;
+    font-weight: 700;
+  }
+  #board td.selected {
+    background: rgba(102, 126, 234, 0.3) !important;
+    box-shadow: inset 0 0 0 2px #667eea;
+  }
+  #board td.same-num {
+    background: rgba(102, 126, 234, 0.12);
+  }
+  #board td.same-row-col {
+    background: rgba(102, 126, 234, 0.06);
+  }
+  #board td.error-cell {
+    color: #ff6b6b;
+    background: rgba(255, 80, 80, 0.15) !important;
+  }
+  #board td.success-cell {
+    color: #51cf66;
+    animation: pop 0.3s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 6px;
+    margin-top: 20px;
+    max-width: 462px;
+    width: 100%;
+  }
+  .numpad button {
+    padding: 10px 0;
+    font-size: 1.2rem;
+    background: #16213e;
+    color: #e0e0e0;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .numpad button:hover { background: #1e2a4a; border-color: #667eea; color: #667eea; }
+  .numpad button:active { transform: scale(0.95); }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .actions button {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid #2a2a4a;
+    background: #16213e;
+    color: #aaa;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .actions button:hover { border-color: #667eea; color: #667eea; }
+  .actions button.primary { background: #667eea; color: white; border-color: #667eea; }
+  .actions button.primary:hover { background: #5a6fd6; }
+
+  .msg {
+    margin-top: 14px;
+    font-size: 0.95rem;
+    height: 22px;
+    color: #51cf66;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .msg.error { color: #ff6b6b; }
+
+  .difficulty-wrap {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .difficulty-wrap span { font-size: 0.85rem; color: #888; }
+  .diff-btn {
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid #2a2a4a;
+    background: #16213e;
+    color: #888;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .diff-btn.active { border-color: #667eea; color: #667eea; background: rgba(102,126,234,0.1); }
+  .diff-btn:hover { color: #667eea; }
+
+  @media (max-width: 520px) {
+    #board td { width: 38px; height: 38px; font-size: 1.1rem; }
+    .numpad { max-width: 360px; }
+    .numpad button { padding: 8px 0; font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>数  独</h1>
+<p class="subtitle">点击格子 → 选数字填入</p>
+
+<div class="difficulty-wrap">
+  <span>难度：</span>
+  <button class="diff-btn active" data-diff="easy">简单</button>
+  <button class="diff-btn" data-diff="medium">中等</button>
+  <button class="diff-btn" data-diff="hard">困难</button>
+</div>
+
+<div class="info-bar">
+  <span>⏱ <strong id="timer">00:00</strong></span>
+  <span>❌ <strong id="errors">0</strong> / 3</span>
+</div>
+
+<div class="board-wrap">
+  <table id="board"></table>
+</div>
+
+<div class="numpad" id="numpad"></div>
+
+<div class="actions">
+  <button class="primary" id="btn-new">新游戏</button>
+  <button id="btn-hint">提示</button>
+  <button id="btn-clear">清空</button>
+  <button id="btn-redo">重做</button>
+</div>
+
+<p class="msg" id="msg"></p>
+
+<script>
+const DIFFICULTY_HOLES = { easy: 35, medium: 45, hard: 55 };
+let board = [], solution = [], fixed = [], selected = null;
+let errorCount = 0, startTime = null, timerInterval = null;
+let difficulty = 'easy';
+let hintUsed = false;
+
+function init() {
+  buildNumpad();
+  newGame();
+  bindDiffButtons();
+  document.getElementById('btn-new').onclick = newGame;
+  document.getElementById('btn-hint').onclick = giveHint;
+  document.getElementById('btn-clear').onclick = clearSelected;
+  document.getElementById('btn-redo').onclick = newGame;
+}
+
+function buildNumpad() {
+  const np = document.getElementById('numpad');
+  np.innerHTML = '';
+  for (let i = 1; i <= 9; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.onclick = () => fillNumber(i);
+    np.appendChild(btn);
+  }
+  // 添加清除按钮
+  const clr = document.createElement('button');
+  clr.textContent = '✕';
+  clr.style.color = '#ff6b6b';
+  clr.onclick = () => fillNumber(0);
+  np.appendChild(clr);
+}
+
+function bindDiffButtons() {
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      difficulty = btn.dataset.diff;
+      newGame();
+    };
+  });
+}
+
+function newGame() {
+  errorCount = 0;
+  document.getElementById('errors').textContent = '0';
+  document.getElementById('msg').textContent = '';
+  document.getElementById('msg').className = 'msg';
+  hintUsed = false;
+  clearInterval(timerInterval);
+  startTime = Date.now();
+  timerInterval = setInterval(updateTimer, 1000);
+  updateTimer();
+
+  solution = generateSolution();
+  board = solution.map(r => [...r]);
+  const holes = DIFFICULTY_HOLES[difficulty];
+  const positions = [];
+  for (let i = 0; i < 81; i++) positions.push(i);
+  shuffle(positions);
+  for (let k = 0; k < holes && k < positions.length; k++) {
+    const idx = positions[k];
+    board[Math.floor(idx / 9)][idx % 9] = 0;
+  }
+  fixed = board.map(row => row.map(v => v !== 0));
+
+  selected = null;
+  render();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function generateSolution() {
+  const base = [
+    [1,2,3,4,5,6,7,8,9],
+    [4,5,6,7,8,9,1,2,3],
+    [7,8,9,1,2,3,4,5,6],
+    [2,3,1,5,6,4,8,9,7],
+    [5,6,4,8,9,7,2,3,1],
+    [8,9,7,2,3,1,5,6,4],
+    [3,1,2,6,7,5,9,4,8],
+    [6,7,8,9,1,2,3,4,5],
+    [9,4,5,3,6,8,7,1,2]
+  ];
+
+  function transpose(m) { return m[0].map((_, i) => m.map(r => r[i])); }
+  function swapRows(m) {
+    for (let g = 0; g < 3; g++) {
+      const block = g * 3;
+      const r1 = block + Math.floor(Math.random() * 3);
+      let r2 = block + Math.floor(Math.random() * 3);
+      while (r2 === r1) r2 = block + Math.floor(Math.random() * 3);
+      [m[r1], m[r2]] = [m[r2], m[r1]];
+    }
+    return m;
+  }
+  function swapCols(m) {
+    for (let g = 0; g < 3; g++) {
+      const block = g * 3;
+      const c1 = block + Math.floor(Math.random() * 3);
+      let c2 = block + Math.floor(Math.random() * 3);
+      while (c2 === c1) c2 = block + Math.floor(Math.random() * 3);
+      for (let r = 0; r < 9; r++) [m[r][c1], m[r][c2]] = [m[r][c2], m[r][c1]];
+    }
+    return m;
+  }
+  function shuffleNums(m) {
+    const nums = [1,2,3,4,5,6,7,8,9];
+    shuffle(nums);
+    return m.map(row => row.map(v => nums[v - 1]));
+  }
+
+  let m = base.map(r => [...r]);
+  shuffleNums(m);
+  swapRows(m);
+  swapCols(m);
+  m = transpose(m);
+  swapRows(m);
+  swapCols(m);
+  return m;
+}
+
+function render() {
+  const table = document.getElementById('board');
+  table.innerHTML = '';
+  for (let r = 0; r < 9; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < 9; c++) {
+      const td = document.createElement('td');
+      td.dataset.r = r;
+      td.dataset.c = c;
+
+      if (board[r][c] !== 0) {
+        td.textContent = board[r][c];
+      }
+
+      if (fixed[r][c]) {
+        td.classList.add('fixed');
+      }
+
+      if (selected && selected.r === r && selected.c === c) {
+        td.classList.add('selected');
+      } else if (selected && board[r][c] === board[selected.r][selected.c] && board[r][c] !== 0) {
+        td.classList.add('same-num');
+      } else if (selected && (selected.r === r || selected.c === c)) {
+        td.classList.add('same-row-col');
+      }
+
+      if (board[r][c] === 0) {
+        td.onclick = () => selectCell(r, c);
+      }
+
+      td.onclick = (e) => {
+        if (e.target !== td && !td.classList.contains('fixed')) return;
+        if (!td.classList.contains('fixed')) selectCell(r, c);
+      };
+
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function selectCell(r, c) {
+  selected = { r, c };
+  render();
+}
+
+function fillNumber(n) {
+  if (!selected) return;
+  const { r, c } = selected;
+  if (fixed[r][c]) return;
+
+  if (n === 0) {
+    board[r][c] = 0;
+    render();
+    return;
+  }
+
+  // 检查冲突
+  for (let i = 0; i < 9; i++) {
+    if (i !== c && board[r][i] === n) { showError(); return; }
+    if (i !== r && board[i][c] === n) { showError(); return; }
+  }
+  const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+  for (let i = br; i < br + 3; i++)
+    for (let j = bc; j < bc + 3; j++)
+      if (!(i === r && j === c) && board[i][j] === n) { showError(); return; }
+
+  board[r][c] = n;
+  clearErrorCells();
+  render();
+
+  if (checkWin()) {
+    showWin();
+  }
+}
+
+function showError() {
+  errorCount++;
+  document.getElementById('errors').textContent = errorCount;
+  const msg = document.getElementById('msg');
+  msg.textContent = '❌ 数字冲突，请重试！';
+  msg.className = 'msg error';
+  setTimeout(() => { msg.textContent = ''; msg.className = 'msg'; }, 2000);
+  if (errorCount >= 3) {
+    const msg2 = document.getElementById('msg');
+    msg2.textContent = '😮 错误已达3次，要重开一局吗？';
+    msg2.className = 'msg error';
+  }
+}
+
+function clearErrorCells() {
+  document.querySelectorAll('.error-cell').forEach(td => td.classList.remove('error-cell'));
+}
+
+function clearSelected() {
+  if (!selected) return;
+  const { r, c } = selected;
+  if (!fixed[r][c]) board[r][c] = 0;
+  render();
+}
+
+function giveHint() {
+  // 找一个空格填上正确答案
+  const empty = [];
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (board[r][c] === 0) empty.push([r, c]);
+  if (empty.length === 0) return;
+  const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+  board[r][c] = solution[r][c];
+  fixed[r][c] = true;
+  selected = { r, c };
+  hintUsed = true;
+  render();
+  if (checkWin()) showWin();
+}
+
+function checkWin() {
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (board[r][c] === 0) return false;
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (board[r][c] !== solution[r][c]) return false;
+  return true;
+}
+
+function showWin() {
+  clearInterval(timerInterval);
+  const elapsed = document.getElementById('timer').textContent;
+  const msg = document.getElementById('msg');
+  msg.textContent = `🎉 恭喜通关！用时 ${elapsed}`;
+  msg.className = 'msg';
+  // 高亮所有格子
+  document.querySelectorAll('#board td').forEach(td => {
+    td.classList.add('success-cell');
+  });
+}
+
+function updateTimer() {
+  if (!startTime) return;
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+}
+
+init();
+</script>
+</body>
+</html>
