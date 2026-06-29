@@ -585,15 +585,24 @@ function fillNumber(n) {
     return;
   }
 
-  // 冲突检测
-  for (let i = 0; i < 9; i++) {
-    if (i !== c && board[r][i] === n) { markError(); return; }
-    if (i !== r && board[i][c] === n) { markError(); return; }
+  // 冲突检测：检查填入后是否违反数独规则
+  const hasConflict = () => {
+    // 检查行
+    for (let i = 0; i < 9; i++) if (i !== c && board[r][i] === n) return true;
+    // 检查列
+    for (let i = 0; i < 9; i++) if (i !== r && board[i][c] === n) return true;
+    // 检查宫
+    const { br, bc } = getBlock(r, c);
+    for (let i = br; i < br + 3; i++)
+      for (let j = bc; j < bc + 3; j++)
+        if (!(i === r && j === c) && board[i][j] === n) return true;
+    return false;
+  };
+
+  if (hasConflict()) {
+    markError();
+    return;  // 有冲突，不填入
   }
-  const { br, bc } = getBlock(r, c);
-  for (let i = br; i < br + 3; i++)
-    for (let j = bc; j < bc + 3; j++)
-      if (!(i === r && j === c) && board[i][j] === n) { markError(); return; }
 
   board[r][c] = n;
   render();
