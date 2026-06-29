@@ -57,8 +57,11 @@
     background: transparent;
   }
   /* 3x3 block borders — thicker & darker */
-  #board td:nth-child(3), #board td:nth-child(6) { border-right: 4px solid #1b5e20; }
-  tr:nth-child(3) td, tr:nth-child(6) td { border-bottom: 4px solid #1b5e20; }
+  /* 每个格子根据所在宫格附加独立边框 */
+  /* 右粗边：宫的最后一列（c=2,5） */
+  .blk-r { border-right: 3px solid #1b5e20 !important; }
+  /* 下粗边：宫的最后一列（r=2,5） */
+  .blk-b { border-bottom: 3px solid #1b5e20 !important; }
 
   /* 选中格子 */
   #board td.selected {
@@ -528,6 +531,12 @@ function render() {
         td.classList.add('filled');
         if (board[r][c] !== 0) td.classList.add('correct');
       }
+
+      // ─── 9宫格独立边框标记 ───
+      const cInBlock = c % 3;
+      const rInBlock = r % 3;
+      if (cInBlock === 2) td.classList.add('blk-r');  // 宫右边界
+      if (rInBlock === 2) td.classList.add('blk-b');  // 宫下边界
 
       // ─── 选中格联动高亮 ───
       if (selected && selected.r === r && selected.c === c) {
