@@ -54,8 +54,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: background 0.1s;
-    position: relative;
-    background: rgba(255,255,255,0.5);
+    background: transparent;
   }
   /* 3x3 block borders */
   #board td:nth-child(3), #board td:nth-child(6) { border-right: 2px solid #388e3c; }
@@ -105,14 +104,14 @@
   /* 给定数字（原始题目） */
   #board td.fixed {
     color: #1b5e20;
-    background: rgba(200,230,201,0.55);
+    background: transparent;
     cursor: default;
     font-weight: 700;
   }
   /* 用户填入的数字 */
   #board td.filled {
     color: #33691e;
-    background: rgba(255,255,255,0.5);
+    background: transparent;
     font-weight: 600;
   }
   /* 填入正确数字高亮 */
