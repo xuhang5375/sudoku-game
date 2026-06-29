@@ -249,8 +249,7 @@
 
 <div class="difficulty-wrap">
   <span>难度：</span>
-  <button class="diff-btn active" data-diff="easy">简单</button>
-  <button class="diff-btn" data-diff="medium">中等</button>
+  <button class="diff-btn active" data-diff="medium">中等</button>
   <button class="diff-btn" data-diff="hard">困难</button>
 </div>
 
@@ -275,7 +274,7 @@
 const DIFFICULTY_HOLES = { easy: 35, medium: 45, hard: 55 };
 let board = [], solution = [], fixed = [], selected = null;
 let errorCount = 0, startTime = null, timerInterval = null;
-let difficulty = 'easy';
+let difficulty = 'medium';
 
 function init() {
   buildNumpad();
