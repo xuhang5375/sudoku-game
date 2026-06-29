@@ -351,6 +351,8 @@ const DIFFICULTY_HOLES = { easy: 35, medium: 45, hard: 55 };
 let board = [], solution = [], fixed = [], selected = null;
 let errorCount = 0, startTime = null, timerInterval = null;
 let difficulty = 'medium';
+// 交互状态：标记是否处于"同数字再次点击"模式
+let repeatMode = false;
 
 function init() {
   buildNumpad();
@@ -486,6 +488,7 @@ function applyHoverHL(r, c) {
 
       if (inRow) td.classList.add('hl-row');
       if (inCol) td.classList.add('hl-col');
+      // 悬停时始终显示宫格高亮（独立于交互模式）
       if (inBlock) td.classList.add('hl-block');
     }
   }
@@ -526,19 +529,38 @@ function render() {
         if (board[r][c] !== 0) td.classList.add('correct');
       }
 
-      // 选中格子
+      // ─── 选中格联动高亮 ───
       if (selected && selected.r === r && selected.c === c) {
         td.classList.add('selected');
-      }
-      // 同数字高亮
-      else if (selected && board[r][c] !== 0 &&
-               board[r][c] === board[selected.r][selected.c]) {
-        td.classList.add('same-num');
+      } else if (selected && board[r][c] !== 0) {
+        // 同行
+        if (r === selected.r) td.classList.add('hl-row');
+        // 同列
+        if (c === selected.c) td.classList.add('hl-col');
+        // 同宫（仅在非同数字再次点击模式时）
+        if (!repeatMode) {
+          const { br, bc } = getBlock(selected.r, selected.c);
+          if (r >= br && r < br + 3 && c >= bc && c < bc + 3) {
+            td.classList.add('hl-block');
+          }
+        }
+        // 其他同数字格子（在非repeatMode时额外显示）
+        if (!repeatMode && board[r][c] === board[selected.r][selected.c]) {
+          td.classList.add('same-num');
+        }
       }
 
       td.onclick = () => {
+        const clickedNum = board[r][c];
+        // 判断是否为"同数字再次点击"：已有选中、且数字相同、且不是同一个格子
+        if (selected && clickedNum !== 0 &&
+            clickedNum === board[selected.r][selected.c] &&
+            !(selected.r === r && selected.c === c)) {
+          repeatMode = true;
+        } else {
+          repeatMode = false;
+        }
         selected = { r, c };
-        clearHoverHL();
         render();
       };
 
