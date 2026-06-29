@@ -36,10 +36,6 @@
   .info-bar span { color: #558b2f; }
   .info-bar strong { color: #2e7d32; }
 
-  .board-wrap {
-    position: relative;
-  }
-
   #board {
     border-collapse: collapse;
     border: 3px solid #388e3c;
@@ -57,7 +53,7 @@
     font-size: 1.4rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.12s;
+    transition: background 0.1s;
     position: relative;
     background: rgba(255,255,255,0.5);
   }
@@ -65,49 +61,74 @@
   #board td:nth-child(3), #board td:nth-child(6) { border-right: 2px solid #388e3c; }
   tr:nth-child(3) td, tr:nth-child(6) td { border-bottom: 2px solid #388e3c; }
 
-  /* 悬停行列高亮 */
-  #board tr:hover td { background: rgba(76,175,80,0.12); }
-  #board td:hover,
-  #board tr:hover td:nth-child(1),
-  #board tr:has(td:hover) td { background: rgba(76,175,80,0.22); }
-  /* 当前列 */
-  #board td:hover ~ td,
-  #board td:hover { --col-idx: attr(data-c); }
-
-  /* 同行同列高亮（通过 JS 配合） */
-  #board td.h-hover {
-    background: rgba(76,175,80,0.22) !important;
+  /* 选中格子 */
+  #board td.selected {
+    background: rgba(76,175,80,0.55) !important;
+    box-shadow: inset 0 0 0 2.5px #1b5e20;
+    z-index: 2;
   }
-  #board td.f-hl {
-    background: rgba(76,175,80,0.14) !important;
+  /* 同行 */
+  #board td.hl-row {
+    background: rgba(76,175,80,0.18) !important;
+  }
+  /* 同列 */
+  #board td.hl-col {
+    background: rgba(76,175,80,0.18) !important;
+  }
+  /* 同9宫格（不是同行同列） */
+  #board td.hl-block {
+    background: rgba(76,175,80,0.13) !important;
+  }
+  /* 同行且同列（十字交叉处）叠加 */
+  #board td.hl-row.hl-col {
+    background: rgba(76,175,80,0.28) !important;
+  }
+  /* 同行且同9宫格 */
+  #board td.hl-row.hl-block {
+    background: rgba(76,175,80,0.23) !important;
+  }
+  /* 同列且同9宫格 */
+  #board td.hl-col.hl-block {
+    background: rgba(76,175,80,0.23) !important;
+  }
+  /* 三者重叠 */
+  #board td.hl-row.hl-col.hl-block {
+    background: rgba(76,175,80,0.33) !important;
+  }
+  /* 选中时不再加hover样式 */
+  #board td.selected.hl-row,
+  #board td.selected.hl-col,
+  #board td.selected.hl-block {
+    background: rgba(76,175,80,0.55) !important;
   }
 
+  /* 给定数字（原始题目） */
   #board td.fixed {
     color: #1b5e20;
     background: rgba(200,230,201,0.55);
     cursor: default;
     font-weight: 700;
   }
-  #board td.given {
+  /* 用户填入的数字 */
+  #board td.filled {
+    color: #33691e;
+    background: rgba(255,255,255,0.5);
+    font-weight: 600;
+  }
+  /* 填入正确数字高亮 */
+  #board td.filled.correct {
     color: #1b5e20;
-    background: rgba(165,214,167,0.45);
-    font-weight: 700;
   }
-  #board td.selected {
-    background: rgba(76,175,80,0.5) !important;
-    box-shadow: inset 0 0 0 2px #2e7d32;
-    z-index: 1;
-  }
+  /* 同数字 */
   #board td.same-num {
-    background: rgba(76,175,80,0.2);
+    background: rgba(76,175,80,0.22) !important;
   }
-  #board td.same-row-col {
-    background: rgba(76,175,80,0.1);
-  }
+  /* 冲突格子 */
   #board td.error-cell {
-    color: #c62828;
-    background: rgba(255,82,82,0.15) !important;
+    color: #c62828 !important;
+    background: rgba(255,82,82,0.18) !important;
   }
+  /* 通关动画 */
   #board td.success-cell {
     color: #2e7d32;
     animation: pop 0.3s ease;
@@ -137,7 +158,12 @@
     transition: all 0.15s;
     font-family: inherit;
   }
-  .numpad button:hover { background: #e8f5e9; border-color: #388e3c; color: #1b5e20; transform: scale(1.05); }
+  .numpad button:hover {
+    background: #e8f5e9;
+    border-color: #388e3c;
+    color: #1b5e20;
+    transform: scale(1.05);
+  }
   .numpad button:active { transform: scale(0.95); }
 
   .actions {
@@ -158,8 +184,16 @@
     transition: all 0.15s;
     font-family: inherit;
   }
-  .actions button:hover { border-color: #388e3c; color: #1b5e20; background: #e8f5e9; }
-  .actions button.primary { background: #388e3c; color: white; border-color: #388e3c; }
+  .actions button:hover {
+    border-color: #388e3c;
+    color: #1b5e20;
+    background: #e8f5e9;
+  }
+  .actions button.primary {
+    background: #388e3c;
+    color: white;
+    border-color: #388e3c;
+  }
   .actions button.primary:hover { background: #2e7d32; }
 
   .msg {
@@ -190,7 +224,12 @@
     transition: all 0.15s;
     font-family: inherit;
   }
-  .diff-btn.active { border-color: #388e3c; color: #1b5e20; background: rgba(76,175,80,0.15); font-weight: 600; }
+  .diff-btn.active {
+    border-color: #388e3c;
+    color: #1b5e20;
+    background: rgba(76,175,80,0.15);
+    font-weight: 600;
+  }
   .diff-btn:hover { border-color: #388e3c; color: #1b5e20; }
 
   @media (max-width: 520px) {
@@ -217,9 +256,7 @@
   <span>❌ <strong id="errors">0</strong> / 3</span>
 </div>
 
-<div class="board-wrap">
-  <table id="board"></table>
-</div>
+<table id="board"></table>
 
 <div class="numpad" id="numpad"></div>
 
@@ -227,7 +264,6 @@
   <button class="primary" id="btn-new">新游戏</button>
   <button id="btn-hint">提示</button>
   <button id="btn-clear">清空</button>
-  <button id="btn-redo">重做</button>
 </div>
 
 <p class="msg" id="msg"></p>
@@ -245,8 +281,8 @@ function init() {
   document.getElementById('btn-new').onclick = newGame;
   document.getElementById('btn-hint').onclick = giveHint;
   document.getElementById('btn-clear').onclick = clearSelected;
-  document.getElementById('btn-redo').onclick = newGame;
   document.getElementById('board').addEventListener('mousemove', handleBoardHover);
+  document.getElementById('board').addEventListener('mouseleave', clearHoverHL);
 }
 
 function buildNumpad() {
@@ -285,12 +321,16 @@ function newGame() {
   startTime = Date.now();
   timerInterval = setInterval(updateTimer, 1000);
   updateTimer();
+
   solution = generateSolution();
   board = solution.map(r => [...r]);
   const holes = DIFFICULTY_HOLES[difficulty];
   const positions = [];
   for (let i = 0; i < 81; i++) positions.push(i);
-  shuffle(positions);
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
   for (let k = 0; k < holes && k < positions.length; k++) {
     const idx = positions[k];
     board[Math.floor(idx / 9)][idx % 9] = 0;
@@ -298,13 +338,6 @@ function newGame() {
   fixed = board.map(row => row.map(v => v !== 0));
   selected = null;
   render();
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
 }
 
 function generateSolution() {
@@ -319,6 +352,12 @@ function generateSolution() {
     [6,7,8,9,1,2,3,4,5],
     [9,4,5,3,6,8,7,1,2]
   ];
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
   function swapRows(m) {
     for (let g = 0; g < 3; g++) {
       const block = g * 3;
@@ -339,66 +378,92 @@ function generateSolution() {
     }
     return m;
   }
-  function shuffleNums(m) {
-    const nums = [1,2,3,4,5,6,7,8,9];
-    shuffle(nums);
-    return m.map(row => row.map(v => nums[v - 1]));
-  }
   let m = base.map(r => [...r]);
-  shuffleNums(m); swapRows(m); swapCols(m);
+  const nums = [1,2,3,4,5,6,7,8,9]; shuffle(nums);
+  m = m.map(row => row.map(v => nums[v - 1]));
+  swapRows(m); swapCols(m);
   m = m[0].map((_, i) => m.map(r => r[i]));
   swapRows(m); swapCols(m);
   return m;
 }
 
-let hoverR = -1, hoverC = -1;
+// hover 高亮逻辑：行 + 列 + 9宫格
+function getBlock(r, c) {
+  return { br: Math.floor(r / 3) * 3, bc: Math.floor(c / 3) * 3 };
+}
+
+function applyHoverHL(r, c) {
+  clearHoverHL();
+  const { br, bc } = getBlock(r, c);
+  const table = document.getElementById('board');
+  const rows = table.querySelectorAll('tr');
+
+  for (let rowIdx = 0; rowIdx < 9; rowIdx++) {
+    const tds = rows[rowIdx].children;
+    for (let colIdx = 0; colIdx < 9; colIdx++) {
+      const td = tds[colIdx];
+      const inRow = (rowIdx === r);
+      const inCol = (colIdx === c);
+      const inBlock = (rowIdx >= br && rowIdx < br + 3 && colIdx >= bc && colIdx < bc + 3);
+
+      if (inRow) td.classList.add('hl-row');
+      if (inCol) td.classList.add('hl-col');
+      if (inBlock) td.classList.add('hl-block');
+    }
+  }
+}
+
+function clearHoverHL() {
+  document.querySelectorAll('.hl-row, .hl-col, .hl-block')
+    .forEach(t => { t.classList.remove('hl-row', 'hl-col', 'hl-block'); });
+}
 
 function handleBoardHover(e) {
   const td = e.target.closest('td');
   if (!td) return;
   const r = parseInt(td.dataset.r), c = parseInt(td.dataset.c);
-  if (r === hoverR && c === hoverC) return;
-  hoverR = r; hoverC = c;
-  // 清除旧的行列高亮
-  document.querySelectorAll('.f-hl').forEach(t => t.classList.remove('f-hl'));
-  document.querySelectorAll('.h-hover').forEach(t => t.classList.remove('h-hover'));
-  if (selected) return;
-  const table = document.getElementById('board');
-  const rows = table.querySelectorAll('tr');
-  // 整行
-  rows[r].querySelectorAll('td').forEach(t => t.classList.add('f-hl'));
-  // 整列
-  rows.forEach(row => {
-    const cell = row.children[c];
-    if (cell) cell.classList.add('f-hl');
-  });
+  applyHoverHL(r, c);
 }
 
 function render() {
-  hoverR = -1; hoverC = -1;
+  clearHoverHL();
   const table = document.getElementById('board');
   table.innerHTML = '';
+
   for (let r = 0; r < 9; r++) {
     const tr = document.createElement('tr');
     for (let c = 0; c < 9; c++) {
       const td = document.createElement('td');
       td.dataset.r = r;
       td.dataset.c = c;
-      if (board[r][c] !== 0) td.textContent = board[r][c];
-      if (fixed[r][c]) td.classList.add('fixed');
+
+      if (board[r][c] !== 0) {
+        td.textContent = board[r][c];
+      }
+
+      if (fixed[r][c]) {
+        td.classList.add('fixed');
+      } else {
+        td.classList.add('filled');
+        if (board[r][c] !== 0) td.classList.add('correct');
+      }
+
+      // 选中格子
       if (selected && selected.r === r && selected.c === c) {
         td.classList.add('selected');
-      } else if (selected && board[r][c] === board[selected.r][selected.c] && board[r][c] !== 0) {
-        td.classList.add('same-num');
-      } else if (selected && (selected.r === r || selected.c === c)) {
-        td.classList.add('same-row-col');
       }
+      // 同数字高亮
+      else if (selected && board[r][c] !== 0 &&
+               board[r][c] === board[selected.r][selected.c]) {
+        td.classList.add('same-num');
+      }
+
       td.onclick = () => {
         selected = { r, c };
-        document.querySelectorAll('.f-hl').forEach(t => t.classList.remove('f-hl'));
-        hoverR = -1; hoverC = -1;
+        clearHoverHL();
         render();
       };
+
       tr.appendChild(td);
     }
     table.appendChild(tr);
@@ -409,27 +474,43 @@ function fillNumber(n) {
   if (!selected) return;
   const { r, c } = selected;
   if (fixed[r][c]) return;
-  if (n === 0) { board[r][c] = 0; render(); return; }
-  for (let i = 0; i < 9; i++) {
-    if (i !== c && board[r][i] === n) { showError(); return; }
-    if (i !== r && board[i][c] === n) { showError(); return; }
+
+  // 清除旧冲突标记
+  document.querySelectorAll('.error-cell').forEach(t => t.classList.remove('error-cell'));
+
+  if (n === 0) {
+    board[r][c] = 0;
+    render();
+    return;
   }
-  const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+
+  // 冲突检测
+  for (let i = 0; i < 9; i++) {
+    if (i !== c && board[r][i] === n) { markError(); return; }
+    if (i !== r && board[i][c] === n) { markError(); return; }
+  }
+  const { br, bc } = getBlock(r, c);
   for (let i = br; i < br + 3; i++)
     for (let j = bc; j < bc + 3; j++)
-      if (!(i === r && j === c) && board[i][j] === n) { showError(); return; }
+      if (!(i === r && j === c) && board[i][j] === n) { markError(); return; }
+
   board[r][c] = n;
   render();
+
   if (checkWin()) showWin();
 }
 
-function showError() {
+function markError() {
   errorCount++;
   document.getElementById('errors').textContent = errorCount;
   const msg = document.getElementById('msg');
   msg.textContent = '❌ 数字冲突，请重试！';
   msg.className = 'msg error';
-  setTimeout(() => { msg.textContent = ''; msg.className = 'msg'; }, 2000);
+  setTimeout(() => {
+    msg.textContent = '';
+    msg.className = 'msg';
+    document.querySelectorAll('.error-cell').forEach(t => t.classList.remove('error-cell'));
+  }, 2000);
 }
 
 function clearSelected() {
